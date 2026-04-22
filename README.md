@@ -78,7 +78,7 @@ QueryForge（中文名：**表语通**）是一款面向数据库探索与查询
 ## 项目结构
 
 ```text
-w2/db_query/
+~/
 ├─ backend/                  # FastAPI 后端
 │  ├─ src/
 │  │  ├─ api/                # 路由层
@@ -139,7 +139,7 @@ w2/db_query/
 
 ```powershell
 git clone <your-repo-url>
-cd <repo-root>/w2/db_query
+cd <repo-root>
 ```
 
 ### 2. 准备 PostgreSQL
@@ -208,7 +208,7 @@ $env:DB_QUERY_POSTGRES_DSN="postgres://postgres:postgres@localhost:5432/postgres
 进入后端目录：
 
 ```powershell
-cd D:\Project\Cursor\w2\db_query\backend
+cd ~\backend
 ```
 
 安装依赖后启动：
@@ -228,7 +228,7 @@ python -m uvicorn src.main:app --reload --port 8000
 进入前端目录：
 
 ```powershell
-cd D:\Project\Cursor\w2\db_query\frontend
+cd ~\frontend
 ```
 
 安装依赖：
@@ -341,7 +341,7 @@ $env:DB_QUERY_POSTGRES_DSN="postgres://postgres:postgres@localhost:5432/postgres
 然后执行：
 
 ```powershell
-cd D:\Project\Cursor\w2\db_query\backend
+cd ~\backend
 pytest -m integration
 ```
 
