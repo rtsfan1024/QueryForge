@@ -1,0 +1,55 @@
+# 数据库文件
+db_query.db
+*.db
+*.sqlite
+*.sqlite3
+
+# 前端依赖和构建产物
+node_modules/
+dist/
+build/
+.vite/
+
+# 后端虚拟环境
+.venv/
+venv/
+env/
+
+# Python缓存和编译文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 测试缓存
+.pytest_cache/
+.coverage
+coverage/
+
+# Python包信息
+*.egg-info/
+dist/
+build/
+
+# 日志文件
+*.log
+logs/
+
+# 环境变量文件
+.env*
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 其他临时文件
+.tmp/
+.temp/
+
