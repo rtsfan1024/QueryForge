@@ -438,4 +438,3 @@ postgres://postgres:postgres@localhost:5432/postgres
 - 英文名：**QueryForge**
 - 中文名：**表语通**
 
-这两个名字适合用于 GitHub 仓库、README 标题、产品介绍和演示页面。
