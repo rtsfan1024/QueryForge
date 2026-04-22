@@ -326,7 +326,7 @@ SELECT 1 AS value
 ### 1. 单元测试
 
 ```powershell
-cd D:\Project\Cursor\w2\db_query\backend
+cd ~\backend
 pytest
 ```
 
