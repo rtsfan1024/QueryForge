@@ -9,6 +9,8 @@ QueryForge（中文名：**表语通**）是一款面向数据库探索与智能
 - **后端**：FastAPI + SQLite + PostgreSQL / MySQL + 驱动 (`psycopg` / `pymysql`) + `sqlglot` + OpenAI 兼容 LLM
 - **前端**：React + TypeScript + Vite + Ant Design + Monaco Editor
 
+<img width="3557" height="1733" alt="9b94ecd5f1c90ca801dbd6fc20456255" src="https://github.com/user-attachments/assets/e0255c93-f365-40f8-b077-2caea2dd8b47" />
+
 ***
 
 ## **目录**
