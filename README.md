@@ -11,23 +11,23 @@ QueryForge（中文名：**表语通**）是一款面向数据库探索与智能
 
 ***
 
-## 目录
+## **目录**
 
-- [核心特性](https://www.google.com/search?q=%23%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7)
-- [架构演进说明](https://www.google.com/search?q=%23%E6%9E%B6%E6%9E%84%E6%BC%94%E8%BF%9B%E8%AF%B4%E6%98%8E)
-- [技术栈](https://www.google.com/search?q=%23%E6%8A%80%E6%9C%AF%E6%A0%88)
-- [项目结构](https://www.google.com/search?q=%23%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84)
-- [快速开始](https://www.google.com/search?q=%23%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
-- [环境变量](https://www.google.com/search?q=%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
-- [数据库连接与使用](https://www.google.com/search?q=%23%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E4%B8%8E%E4%BD%BF%E7%94%A8)
-- [API 概览](https://www.google.com/search?q=%23api-%E6%A6%82%E8%A7%88)
-- [测试与验收](https://www.google.com/search?q=%23%E6%B5%8B%E8%AF%95%E4%B8%8E%E9%AA%8C%E6%94%B6)
-- [常见问题](https://www.google.com/search?q=%23%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
-- [开发者指南（扩展新数据库）](https://www.google.com/search?q=%23%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97%E6%89%A9%E5%B1%95%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93)
+- [核心特性](https://www.google.com/search?q=%23核心特性)
+- [架构演进说明](https://www.google.com/search?q=%23架构演进说明)
+- [技术栈](https://www.google.com/search?q=%23技术栈)
+- [项目结构](https://www.google.com/search?q=%23项目结构)
+- [快速开始](https://www.google.com/search?q=%23快速开始)
+- [环境变量](https://www.google.com/search?q=%23环境变量)
+- [数据库连接与使用](https://www.google.com/search?q=%23数据库连接与使用)
+- [API 概览](https://www.google.com/search?q=%23api-概览)
+- [测试与验收](https://www.google.com/search?q=%23测试与验收)
+- [常见问题](https://www.google.com/search?q=%23常见问题)
+- [开发者指南（扩展新数据库）](https://www.google.com/search?q=%23开发者指南扩展新数据库)
 
 ***
 
-## 核心特性
+## **核心特性**
 
 - **多数据源支持**：无缝连接 PostgreSQL 与 MySQL 数据库。
 - **智能 Schema 内省 (Introspection)**：自动采集不同数据库的表、视图、列信息与基础关联关系。
@@ -37,31 +37,21 @@ QueryForge（中文名：**表语通**）是一款面向数据库探索与智能
 
 ***
 
-## 架构演进说明
+## **架构演进说明**
 
 v2.0 版本严格践行了面向对象设计原则，为未来的横向扩展（如接入 SQLite, Oracle, ClickHouse）铺平了道路：
 
-**设计原则**
-
-**落地实践**
-
-**开闭原则 (OCP)**
-
-引入 `IDatabaseIntrospector` / `ISQLDialect` 接口。新增数据库类型无需修改核心查询与校验逻辑。
-
-**单一职责 (SRP)**
-
-每种数据库的方言解析（如 `MySQLDialect`）、元数据抓取（`MySQLIntrospection`）与连接管理独立成类。
-
-**依赖倒置 (DIP)**
-
-核心业务服务（如 `SQLService`, `MetadataService`）仅依赖抽象接口，具体实现由工厂类（Factory）在运行时动态注入。
+| **设计原则**       | **落地实践**                                                                    |
+| :------------- | :-------------------------------------------------------------------------- |
+| **开闭原则 (OCP)** | 引入 `IDatabaseIntrospector` / `ISQLDialect` 接口。新增数据库类型无需修改核心查询与校验逻辑。         |
+| **单一职责 (SRP)** | 每种数据库的方言解析（如 `MySQLDialect`）、元数据抓取（`MySQLIntrospection`）与连接管理独立成类。          |
+| **依赖倒置 (DIP)** | 核心业务服务（如 `SQLService`, `MetadataService`）仅依赖抽象接口，具体实现由工厂类（Factory）在运行时动态注入。 |
 
 ***
 
-## 技术栈
+## **技术栈**
 
-### 后端
+### **后端**
 
 - Python 3.11+
 - Web 框架：FastAPI
@@ -70,7 +60,7 @@ v2.0 版本严格践行了面向对象设计原则，为未来的横向扩展（
 - SQL 语法解析：`sqlglot`
 - LLM 交互：OpenAI Python SDK
 
-### 前端
+### **前端**
 
 - 核心框架：React + TypeScript + Vite
 - UI 组件库：Ant Design
@@ -78,59 +68,57 @@ v2.0 版本严格践行了面向对象设计原则，为未来的横向扩展（
 
 ***
 
-## 项目结构
+## **项目结构**
 
 Plaintext
 
 ```
 ~/
-├─ backend/                  # FastAPI 后端
+├─ backend/                  # FastAPI 后端
 │  ├─ src/
-│  │  ├─ api/                # 路由层 (dbs.py 等)
-│  │  ├─ llm/                # LLM 客户端与方言特定的 Prompt 管理
-│  │  ├─ models/             # 数据模型 (DatabaseType 枚举等)
-│  │  ├─ repositories/       # 数据层抽象
-│  │  │  ├─ introspector_interface.py    # 内省器抽象接口
-│  │  │  ├─ postgres_introspection.py    # PG 内省实现
-│  │  │  ├─ mysql_introspection.py       # MySQL 内省实现
-│  │  │  └─ connection_factory.py        # 数据库连接工厂
-│  │  └─ services/           # 核心服务逻辑
-│  │     ├─ sql_dialect_interface.py     # SQL 方言抽象接口
-│  │     ├─ postgres_dialect.py          # PG 方言处理器
-│  │     ├─ mysql_dialect.py             # MySQL 方言处理器
-│  │     └─ sql_service.py               # SQL 校验与执行服务
-│  ├─ tests/                 # 单元测试与真实数据库集成测试
-│  └─ pyproject.toml         # 依赖配置
-├─ frontend/                 # React 前端
+│  │  ├─ api/                # 路由层 (dbs.py 等)
+│  │  ├─ llm/                # LLM 客户端与方言特定的 Prompt 管理
+│  │  ├─ models/             # 数据模型 (DatabaseType 枚举等)
+│  │  ├─ repositories/       # 数据层抽象
+│  │  │  ├─ introspector_interface.py    # 内省器抽象接口
+│  │  │  ├─ postgres_introspection.py    # PG 内省实现
+│  │  │  ├─ mysql_introspection.py       # MySQL 内省实现
+│  │  │  └─ connection_factory.py        # 数据库连接工厂
+│  │  └─ services/           # 核心服务逻辑
+│  │     ├─ sql_dialect_interface.py     # SQL 方言抽象接口
+│  │     ├─ postgres_dialect.py          # PG 方言处理器
+│  │     ├─ mysql_dialect.py             # MySQL 方言处理器
+│  │     └─ sql_service.py               # SQL 校验与执行服务
+│  ├─ tests/                 # 单元测试与真实数据库集成测试
+│  └─ pyproject.toml         # 依赖配置
+├─ frontend/                 # React 前端
 │  ├─ src/
-│  │  ├─ components/         # DatabaseTypeLabel 等公共组件
-│  │  ├─ pages/              # 包含多数据库类型选择的交互界面
-│  │  └─ services/           # API 请求层
+│  │  ├─ components/         # DatabaseTypeLabel 等公共组件
+│  │  ├─ pages/              # 包含多数据库类型选择的交互界面
+│  │  └─ services/           # API 请求层
 └─ README.md
-
 ```
 
 ***
 
-## 快速开始
+## **快速开始**
 
-### 1. 克隆项目与准备工作
+### **1. 克隆项目与准备工作**
 
 Bash
 
 ```
 git clone <your-repo-url>
 cd <repo-root>
-
 ```
 
 确保本地或远程有可访问的 PostgreSQL 或 MySQL 实例。
 
-### 2. 环境配置
+### **2. 环境配置**
 
-设置必要的 LLM API 密钥和数据库默认密码（参见 [环境变量](https://www.google.com/search?q=%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F) 章节）。
+设置必要的 LLM API 密钥和数据库默认密码（参见 [环境变量](https://www.google.com/search?q=%23环境变量) 章节）。
 
-### 3. 启动后端
+### **3. 启动后端**
 
 Bash
 
@@ -138,10 +126,9 @@ Bash
 cd backend
 pip install -r requirements.txt  # 或 poetry/pdm install
 python -m uvicorn src.main:app --reload --port 8000
-
 ```
 
-### 4. 启动前端
+### **4. 启动前端**
 
 Bash
 
@@ -149,48 +136,47 @@ Bash
 cd frontend
 npm install
 npm run dev
-
 ```
 
 访问 `http://localhost:5173` 开始使用。
 
 ***
 
-## 环境变量
+## **环境变量**
 
-### 后端必需 / 推荐
+### **后端必需 / 推荐**
 
 - `OPENAI_BASE_URL`: OpenAI 兼容中转站地址（例：`https://api.vveai.com/v1`）
 - `OPENAI_API_KEY`: 接口密钥
 - `OPENAI_MODEL`: LLM 模型名（推荐：`gpt-4o`）
 - `DB_QUERY_POSTGRES_PASSWORD` / `DB_QUERY_MYSQL_PASSWORD`: 默认的回退数据库密码。
 
-### 集成测试专用
+### **集成测试专用**
 
 - `DB_QUERY_POSTGRES_DSN`: `postgres://postgres:postgres@localhost:5432/postgres`
 - `DB_QUERY_MYSQL_DSN`: `mysql://root:password@localhost:3306/tests`
 
 ***
 
-## 数据库连接与使用
+## **数据库连接与使用**
 
 在前端界面的**添加数据库**表单中，首先**选择数据库类型 (dbType)**，然后填入对应的连接信息：
 
-### PostgreSQL 示例
+### **PostgreSQL 示例**
 
 - **类型**: PostgreSQL
 - **连接名**: pg\_dev
 - **连接 URL**: `postgres://postgres@localhost:5432/test`
 - **密码**: (若 URL 中未带密码，需在此填写)
 
-### MySQL 示例
+### **MySQL 示例**
 
 - **类型**: MySQL
 - **连接名**: mysql\_prod
 - **连接 URL**: `mysql://root@localhost:3306/tests`
 - **密码**: (若 URL 中未带密码，需在此填写)
 
-### 操作流转
+### **操作流转**
 
 1. **Schema 获取**：保存后系统自动通过 Factory 路由到对应的 Introspector 获取元数据。
 2. **手写/AI 生成 SQL**：在执行面板输入 SQL 或自然语言（如：“查询近7天注册的用户数”）。
@@ -198,7 +184,7 @@ npm run dev
 
 ***
 
-## API 概览
+## **API 概览**
 
 - `GET /api/v1/dbs` : 获取所有保存的连接列表（包含 `dbType` 标识）。
 - `POST /api/v1/dbs/{name}` : 新增/更新连接配置并触发初次 Schema 抓取。
@@ -208,7 +194,7 @@ npm run dev
 
 ***
 
-## 常见问题
+## **常见问题**
 
 **1. 连接 MySQL 失败，提示驱动未找到？**
 
@@ -224,7 +210,7 @@ npm run dev
 
 ***
 
-## 开发者指南（扩展新数据库）
+## **开发者指南（扩展新数据库）**
 
 基于 v2.0 确立的 SOLID 架构，若需扩展支持新数据库（例如 SQLite 或 SQL Server），只需执行以下 5 步，**完全无需修改现有核心业务代码**：
 
