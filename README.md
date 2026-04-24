@@ -51,6 +51,8 @@ QueryForge（中文名：**表语通**）是一款面向数据库探索与查询
 - 自然语言生成 SQL
 - 查询结果表格展示
 
+<img width="1689" height="1248" alt="b96f503719adc2976f8de9fd30a301e3" src="https://github.com/user-attachments/assets/b598ca44-9389-445e-8ba0-d1b00d577390" />
+
 ***
 
 ## 技术栈
