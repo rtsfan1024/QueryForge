@@ -1,57 +1,61 @@
-# QueryForge（表语通）
+# QueryForge（表语通）v2.0
 
-QueryForge（中文名：**表语通**）是一款面向数据库探索与查询分析的 Web 工具。它支持连接 PostgreSQL 数据库，自动采集 Schema（模式）元数据，执行只读 SQL 查询，并通过自然语言生成 SQL，帮助用户更高效地理解和检索数据库内容。
+QueryForge（中文名：**表语通**）是一款面向数据库探索与智能查询分析的 Web 工具。v2.0 版本在原有 PostgreSQL 的基础上，进行了基于 **SOLID 原则**的底层架构重构，全面支持 **MySQL** 数据源。
 
-本项目采用前后端分离架构：
+本项目通过分离元数据提取（Introspection）、SQL 方言处理（Dialect）与连接管理（Connection Factory），实现了高扩展的多数据源支持。系统支持自动采集 Schema 元数据，执行带安全拦截的只读 SQL 查询，并通过自然语言生成适配不同数据库方言的 SQL (NL2SQL)。
 
-- 后端：FastAPI + SQLite + PostgreSQL + `sqlglot` + OpenAI 兼容 LLM
-- 前端：React + TypeScript + Vite + Ant Design + Monaco Editor
+采用前后端分离架构：
+
+- **后端**：FastAPI + SQLite + PostgreSQL / MySQL + 驱动 (`psycopg` / `pymysql`) + `sqlglot` + OpenAI 兼容 LLM
+- **前端**：React + TypeScript + Vite + Ant Design + Monaco Editor
 
 ***
 
 ## 目录
 
-- [特性](#特性)
-- [在线效果](#在线效果)
-- [技术栈](#技术栈)
-- [项目结构](#项目结构)
-- [支持范围与说明](#支持范围与说明)
-- [快速开始](#快速开始)
-- [环境变量](#环境变量)
-- [后端启动](#后端启动)
-- [前端启动](#前端启动)
-- [数据库连接与使用](#数据库连接与使用)
-- [API 概览](#api-概览)
-- [测试与验收](#测试与验收)
-- [常见问题](#常见问题)
-- [开发说明](#开发说明)
-- [许可证](#许可证)
+- [核心特性](https://www.google.com/search?q=%23%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7)
+- [架构演进说明](https://www.google.com/search?q=%23%E6%9E%B6%E6%9E%84%E6%BC%94%E8%BF%9B%E8%AF%B4%E6%98%8E)
+- [技术栈](https://www.google.com/search?q=%23%E6%8A%80%E6%9C%AF%E6%A0%88)
+- [项目结构](https://www.google.com/search?q=%23%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84)
+- [快速开始](https://www.google.com/search?q=%23%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
+- [环境变量](https://www.google.com/search?q=%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
+- [数据库连接与使用](https://www.google.com/search?q=%23%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E4%B8%8E%E4%BD%BF%E7%94%A8)
+- [API 概览](https://www.google.com/search?q=%23api-%E6%A6%82%E8%A7%88)
+- [测试与验收](https://www.google.com/search?q=%23%E6%B5%8B%E8%AF%95%E4%B8%8E%E9%AA%8C%E6%94%B6)
+- [常见问题](https://www.google.com/search?q=%23%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
+- [开发者指南（扩展新数据库）](https://www.google.com/search?q=%23%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97%E6%89%A9%E5%B1%95%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93)
 
 ***
 
-## 特性
+## 核心特性
 
-- 支持保存数据库连接到 SQLite
-- 自动抓取 PostgreSQL 的表、视图、列信息与基础关系信息
-- 支持手写 SQL 查询
-- 仅允许只读查询（`SELECT`）
-- 未显式包含 `LIMIT` 时自动追加默认 `LIMIT 1000`，避免全量误查
-- 支持自然语言生成 SQL
-- 自然语言生成后会复用同一套只读校验与查询执行链路
-- 前端提供数据库连接管理、Schema 浏览、SQL 编辑、结果展示
-- 支持真实 PostgreSQL 集成测试
+- **多数据源支持**：无缝连接 PostgreSQL 与 MySQL 数据库。
+- **智能 Schema 内省 (Introspection)**：自动采集不同数据库的表、视图、列信息与基础关联关系。
+- **方言自适应只读保护**：底层集成 SQL 语法树（Abstract Syntax Tree）解析，针对不同数据源严格限制仅允许 `SELECT` 操作，并自动追加对应方言的 `LIMIT 1000` 防护。
+- **NL2SQL（自然语言转 SQL）**：基于目标数据库的 Schema 上下文与特定的方言 Prompt，智能生成准确的 SQL 语句。
+- **连接状态持久化**：支持将异构数据库的连接配置统一保存至 SQLite，方便跨会话管理。
 
 ***
 
-## 在线效果
+## 架构演进说明
 
-- 数据库连接管理
-- Schema 浏览
-- SQL 编辑与执行
-- 自然语言生成 SQL
-- 查询结果表格展示
+v2.0 版本严格践行了面向对象设计原则，为未来的横向扩展（如接入 SQLite, Oracle, ClickHouse）铺平了道路：
 
-<img width="1689" height="1248" alt="b96f503719adc2976f8de9fd30a301e3" src="https://github.com/user-attachments/assets/b598ca44-9389-445e-8ba0-d1b00d577390" />
+**设计原则**
+
+**落地实践**
+
+**开闭原则 (OCP)**
+
+引入 `IDatabaseIntrospector` / `ISQLDialect` 接口。新增数据库类型无需修改核心查询与校验逻辑。
+
+**单一职责 (SRP)**
+
+每种数据库的方言解析（如 `MySQLDialect`）、元数据抓取（`MySQLIntrospection`）与连接管理独立成类。
+
+**依赖倒置 (DIP)**
+
+核心业务服务（如 `SQLService`, `MetadataService`）仅依赖抽象接口，具体实现由工厂类（Factory）在运行时动态注入。
 
 ***
 
@@ -60,113 +64,95 @@ QueryForge（中文名：**表语通**）是一款面向数据库探索与查询
 ### 后端
 
 - Python 3.11+
-- FastAPI
-- SQLite
-- PostgreSQL
-- `psycopg[binary]`
-- `sqlglot`
-- OpenAI Python SDK（通过兼容接口调用）
+- Web 框架：FastAPI
+- 关系型持久化：SQLite (存储配置)
+- 数据库驱动：`psycopg[binary]` (PostgreSQL), `pymysql` 或 `mysql-connector-python` (MySQL)
+- SQL 语法解析：`sqlglot`
+- LLM 交互：OpenAI Python SDK
 
 ### 前端
 
-- React
-- TypeScript
-- Vite
-- Ant Design
-- Monaco Editor
+- 核心框架：React + TypeScript + Vite
+- UI 组件库：Ant Design
+- 代码编辑器：Monaco Editor
 
 ***
 
 ## 项目结构
 
-```text
+Plaintext
+
+```
 ~/
 ├─ backend/                  # FastAPI 后端
 │  ├─ src/
-│  │  ├─ api/                # 路由层
-│  │  ├─ llm/                # LLM 调用封装
-│  │  ├─ models/             # 数据模型
-│  │  ├─ repositories/       # SQLite / PostgreSQL 元数据访问
-│  │  └─ services/           # SQL 执行与元数据服务
-│  ├─ tests/                 # 单元测试与集成测试
-│  ├─ pyproject.toml         # Python 依赖与测试配置
-│  └─ pytest.ini             # pytest 标记配置
+│  │  ├─ api/                # 路由层 (dbs.py 等)
+│  │  ├─ llm/                # LLM 客户端与方言特定的 Prompt 管理
+│  │  ├─ models/             # 数据模型 (DatabaseType 枚举等)
+│  │  ├─ repositories/       # 数据层抽象
+│  │  │  ├─ introspector_interface.py    # 内省器抽象接口
+│  │  │  ├─ postgres_introspection.py    # PG 内省实现
+│  │  │  ├─ mysql_introspection.py       # MySQL 内省实现
+│  │  │  └─ connection_factory.py        # 数据库连接工厂
+│  │  └─ services/           # 核心服务逻辑
+│  │     ├─ sql_dialect_interface.py     # SQL 方言抽象接口
+│  │     ├─ postgres_dialect.py          # PG 方言处理器
+│  │     ├─ mysql_dialect.py             # MySQL 方言处理器
+│  │     └─ sql_service.py               # SQL 校验与执行服务
+│  ├─ tests/                 # 单元测试与真实数据库集成测试
+│  └─ pyproject.toml         # 依赖配置
 ├─ frontend/                 # React 前端
 │  ├─ src/
-│  │  ├─ app.tsx             # 主页面
-│  │  ├─ services/           # API 请求封装
-│  │  └─ types.ts            # 前端类型
-│  ├─ package.json
-│  └─ vite.config.ts
-├─ db_query.db               # SQLite 数据文件（运行后生成）
+│  │  ├─ components/         # DatabaseTypeLabel 等公共组件
+│  │  ├─ pages/              # 包含多数据库类型选择的交互界面
+│  │  └─ services/           # API 请求层
 └─ README.md
+
 ```
-
-***
-
-## 支持范围与说明
-
-### 当前已实现
-
-- PostgreSQL 数据源连接
-- PostgreSQL Schema 元数据采集
-- 手写 SQL 查询执行
-- 自然语言生成 SQL
-- 只读 SQL 校验
-- 默认 `LIMIT 1000`
-- 前端查询与展示
-- 集成测试
-
-### 重要说明
-
-当前项目**主目标是 PostgreSQL**。虽然代码里已经引入了 OpenAI 兼容 LLM 接口和 schema 上下文构建，但**自然语言生成 SQL 的最终准确性仍受目标数据库方言、schema 完整度和 LLM 输出质量影响**。
-
-换言之：
-
-- 对于 PostgreSQL：支持最好，当前是主要目标数据库
-- 对于 MySQL / Oracle：目前**没有完整的方言适配和元数据适配**，不能保证自然语言转 SQL 一定正确
-
-如果你计划后续扩展多数据库支持，建议继续增加：
-
-- 数据库方言识别
-- 目标方言 SQL 生成提示词
-- 针对 MySQL / Oracle 的元数据读取适配
-- 针对不同数据库的 SQL 校验与执行层适配
 
 ***
 
 ## 快速开始
 
-### 1. 克隆项目
+### 1. 克隆项目与准备工作
 
-```powershell
+Bash
+
+```
 git clone <your-repo-url>
 cd <repo-root>
+
 ```
 
-### 2. 准备 PostgreSQL
+确保本地或远程有可访问的 PostgreSQL 或 MySQL 实例。
 
-确保本地或远程 PostgreSQL 可访问。
+### 2. 环境配置
 
-示例连接：
+设置必要的 LLM API 密钥和数据库默认密码（参见 [环境变量](https://www.google.com/search?q=%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F) 章节）。
 
-- Host: `localhost`
-- Port: `5432`
-- Database: `test` 或 `postgres`
-- User: `postgres`
-- Password: `postgres`
+### 3. 启动后端
 
-### 3. 配置环境变量
+Bash
 
-参见下方 [环境变量](#环境变量)。
+```
+cd backend
+pip install -r requirements.txt  # 或 poetry/pdm install
+python -m uvicorn src.main:app --reload --port 8000
 
-### 4. 启动后端
+```
 
-参见 [后端启动](#后端启动)。
+### 4. 启动前端
 
-### 5. 启动前端
+Bash
 
-参见 [前端启动](#前端启动)。
+```
+cd frontend
+npm install
+npm run dev
+
+```
+
+访问 `http://localhost:5173` 开始使用。
 
 ***
 
@@ -174,269 +160,80 @@ cd <repo-root>
 
 ### 后端必需 / 推荐
 
-- `OPENAI_BASE_URL`
-  - OpenAI 兼容中转站地址
-  - 当前推荐值：`https://api.vveai.com/v1`
-- `OPENAI_API_KEY`
-  - OpenAI 兼容接口密钥
-- `OPENAI_MODEL`
-  - LLM 模型名
-  - 当前推荐值：`gpt-4o`
-- `DB_QUERY_POSTGRES_PASSWORD`
-  - PostgreSQL 默认密码
-  - 如果数据库连接 URL 里没有带密码，后端会尝试使用它补全
-- `POSTGRES_PASSWORD`
-  - 与 `DB_QUERY_POSTGRES_PASSWORD` 兼容的备选项
+- `OPENAI_BASE_URL`: OpenAI 兼容中转站地址（例：`https://api.vveai.com/v1`）
+- `OPENAI_API_KEY`: 接口密钥
+- `OPENAI_MODEL`: LLM 模型名（推荐：`gpt-4o`）
+- `DB_QUERY_POSTGRES_PASSWORD` / `DB_QUERY_MYSQL_PASSWORD`: 默认的回退数据库密码。
 
-### 真实集成测试使用
+### 集成测试专用
 
-- `DB_QUERY_POSTGRES_DSN`
-  - 真实 PostgreSQL 集成测试使用的连接串
-
-示例（PowerShell）：
-
-```powershell
-$env:OPENAI_BASE_URL="https://api.vveai.com/v1"
-$env:OPENAI_API_KEY="your_openai_compatible_key"
-$env:OPENAI_MODEL="gpt-4o"
-$env:DB_QUERY_POSTGRES_PASSWORD="postgres"
-$env:DB_QUERY_POSTGRES_DSN="postgres://postgres:postgres@localhost:5432/postgres"
-```
-
-***
-
-## 后端启动
-
-进入后端目录：
-
-```powershell
-cd ~\backend
-```
-
-安装依赖后启动：
-
-```powershell
-python -m uvicorn src.main:app --reload --port 8000
-```
-
-后端默认地址：
-
-- `http://localhost:8000`
-
-***
-
-## 前端启动
-
-进入前端目录：
-
-```powershell
-cd ~\frontend
-```
-
-安装依赖：
-
-```powershell
-npm install
-```
-
-启动开发服务器：
-
-```powershell
-npm run dev
-```
-
-前端默认地址：
-
-- `http://localhost:5173`
+- `DB_QUERY_POSTGRES_DSN`: `postgres://postgres:postgres@localhost:5432/postgres`
+- `DB_QUERY_MYSQL_DSN`: `mysql://root:password@localhost:3306/tests`
 
 ***
 
 ## 数据库连接与使用
 
-### 1. 添加数据库连接
+在前端界面的**添加数据库**表单中，首先**选择数据库类型 (dbType)**，然后填入对应的连接信息：
 
-在前端中输入：
+### PostgreSQL 示例
 
-- 连接名：例如 `test`
-- 数据库 URL：例如 `postgres://postgres@localhost:5432/test`
-- 密码：例如 `postgres`
+- **类型**: PostgreSQL
+- **连接名**: pg\_dev
+- **连接 URL**: `postgres://postgres@localhost:5432/test`
+- **密码**: (若 URL 中未带密码，需在此填写)
 
-点击“添加数据库”。
+### MySQL 示例
 
-### 2. 查看 Schema
+- **类型**: MySQL
+- **连接名**: mysql\_prod
+- **连接 URL**: `mysql://root@localhost:3306/tests`
+- **密码**: (若 URL 中未带密码，需在此填写)
 
-添加成功后，系统会：
+### 操作流转
 
-- 保存连接到 SQLite
-- 连接 PostgreSQL
-- 抓取表 / 视图 / 列 / 关系信息
-- 在前端展示 Schema 列表
-
-### 3. 执行手写 SQL
-
-在 SQL 编辑器中输入，例如：
-
-```sql
-SELECT 1 AS value
-```
-
-点击“执行 SQL”。
-
-### 4. 自然语言生成 SQL
-
-输入自然语言，例如：
-
-```text
-查询 高一3班 所有学生信息
-```
-
-点击“生成 SQL”。
-
-系统会：
-
-1. 读取当前数据库的 Schema
-2. 将结构化 Schema 上下文传给 LLM
-3. 生成 SQL
-4. 进行只读与字段校验
-5. 执行 PostgreSQL 查询
-6. 将结果展示在页面上
+1. **Schema 获取**：保存后系统自动通过 Factory 路由到对应的 Introspector 获取元数据。
+2. **手写/AI 生成 SQL**：在执行面板输入 SQL 或自然语言（如：“查询近7天注册的用户数”）。
+3. **安全执行**：系统将通过 `ISQLDialect` 进行方言特定的 AST 校验，确保无破坏性操作，追加 `LIMIT` 后执行并渲染数据表。
 
 ***
 
 ## API 概览
 
-### 数据库连接
-
-- `GET /api/v1/dbs`
-  - 获取数据库连接列表
-- `POST /api/v1/dbs/{name}`
-  - 新增或更新数据库连接
-- `GET /api/v1/dbs/{name}`
-  - 获取数据库 Schema 详情
-
-### SQL 查询
-
-- `POST /api/v1/dbs/{name}/query`
-  - 执行手写 SQL
-- `POST /api/v1/dbs/{name}/query/natural`
-  - 根据自然语言生成 SQL 并执行
-
-***
-
-## 测试与验收
-
-### 1. 单元测试
-
-```powershell
-cd ~\backend
-pytest
-```
-
-### 2. PostgreSQL 真实集成测试
-
-先设置环境变量：
-
-```powershell
-$env:DB_QUERY_POSTGRES_DSN="postgres://postgres:postgres@localhost:5432/postgres"
-```
-
-然后执行：
-
-```powershell
-cd ~\backend
-pytest -m integration
-```
-
-### 3. 验收建议
-
-- 新增数据库连接成功
-- Schema 元数据展示正确
-- 手写 SQL 能返回正确结果
-- 非 `SELECT` 语句被拒绝
-- 自然语言生成 SQL 后能显示生成内容
-- 自然语言生成结果能执行并返回结果
+- `GET /api/v1/dbs` : 获取所有保存的连接列表（包含 `dbType` 标识）。
+- `POST /api/v1/dbs/{name}` : 新增/更新连接配置并触发初次 Schema 抓取。
+- `GET /api/v1/dbs/{name}` : 获取目标库的完整 Schema。
+- `POST /api/v1/dbs/{name}/query` : 安全执行手写 SQL。
+- `POST /api/v1/dbs/{name}/query/natural` : 提交自然语言，生成目标数据库方言的 SQL 并执行。
 
 ***
 
 ## 常见问题
 
-### 1. 连接时报 `fe_sendauth: no password supplied`
+**1. 连接 MySQL 失败，提示驱动未找到？**
 
-原因通常是连接串里没有密码。
+确保后端环境中安装了 `pymysql` 或 `mysql-connector-python`。在虚拟环境中执行 `pip install pymysql`。
 
-解决方式：
+**2. 生成的 SQL 在 MySQL 下报错？**
 
-- 前端填写密码
-- 或设置 `DB_QUERY_POSTGRES_PASSWORD`
-- 或在连接串里直接写入密码，例如：
+不同 LLM 对方言的理解存在差异。如果模型在 MySQL 模式下输出了 PostgreSQL 特有的语法（如 `ILIKE` 或 `CURRENT_DATE` 类型转换），请检查 `src/llm/client.py` 中针对 MySQL 的专用 System Prompt 是否被正确加载。
 
-```text
-postgres://postgres:postgres@localhost:5432/postgres
-```
+**3. “no password supplied” 或 “Access denied”**
+
+请确保连接 URL 格式标准（包含凭证）或在前端面板显式提供了密码字段。
 
 ***
 
-### 2. 自然语言生成 SQL 不准确
+## 开发者指南（扩展新数据库）
 
-可能原因：
+基于 v2.0 确立的 SOLID 架构，若需扩展支持新数据库（例如 SQLite 或 SQL Server），只需执行以下 5 步，**完全无需修改现有核心业务代码**：
 
-- Schema 元数据不完整
-- 目标数据库方言没有完全适配
-- LLM 返回了不符合预期的 SQL
-
-建议：
-
-- 先确认 PostgreSQL 元数据已刷新
-- 确保 schema 中列名和关系信息完整
-- 使用更明确的自然语言描述
+1. 在 `DatabaseType` 枚举中新增类型。
+2. 实现 `IDatabaseIntrospector` 接口，编写该库的 Schema 查询逻辑。
+3. 实现 `ISQLDialect` 接口，定义该库的 SQL AST 解析与 `LIMIT` 注入规则。
+4. 实现 `IDatabaseConnectionFactory` 接口，管理特定驱动的连接。
+5. 在 `IntrospectorFactory` 与 `SQLDialectFactory` 的注册表中挂载新实现。
 
 ***
 
-### 3. 编辑器里看不到生成 SQL
-
-请确认：
-
-- 后端 `/query/natural` 请求成功返回
-- 页面没有显示校验失败或执行失败
-- 浏览器控制台和网络请求没有异常
-
-***
-
-## 开发说明
-
-### 后端
-
-后端实现了：
-
-- SQLite 持久化
-- PostgreSQL 元数据采集
-- SQL 只读校验
-- 默认 `LIMIT` 限制
-- LLM 自然语言转 SQL
-- 真实查询执行
-
-### 前端
-
-前端实现了：
-
-- 数据库连接管理
-- 当前数据库选择
-- Schema 浏览
-- SQL 编辑器
-- 手写查询执行
-- 自然语言输入与生成
-- 查询结果表格展示
-
-***
-
-## 许可证
-
-本项目采用 Apache-2.0
-
-***
-
-## 项目名说明
-
-- 英文名：**QueryForge**
-- 中文名：**表语通**
-
+*License: Apache-2.0*
