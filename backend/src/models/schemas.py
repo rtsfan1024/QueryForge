@@ -11,6 +11,11 @@ class ConnectionStatus(str, Enum):
     error = "error"
 
 
+class DatabaseType(str, Enum):
+    postgresql = "postgresql"
+    mysql = "mysql"
+
+
 class ObjectType(str, Enum):
     table = "table"
     view = "view"
@@ -20,6 +25,7 @@ class DatabaseConnection(BaseModel):
     id: str
     name: str
     url: str
+    dbType: DatabaseType = DatabaseType.postgresql
     status: ConnectionStatus
     lastConnectedAt: datetime | None = None
     createdAt: datetime

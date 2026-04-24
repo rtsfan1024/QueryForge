@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 from uuid import uuid4
 
-from src.models.schemas import ConnectionStatus, DatabaseConnection, ObjectType, SchemaMetadata
+from src.models.schemas import ConnectionStatus, DatabaseConnection, DatabaseType, ObjectType, SchemaMetadata
 
 DB_PATH = Path("D:/Project/Cursor/w2/db_query/db_query.db")
 
@@ -28,6 +28,7 @@ class SQLiteStore:
                     id TEXT PRIMARY KEY,
                     name TEXT UNIQUE NOT NULL,
                     url TEXT NOT NULL,
+                    db_type TEXT NOT NULL DEFAULT 'postgresql',
                     status TEXT NOT NULL,
                     last_connected_at TEXT,
                     created_at TEXT NOT NULL,
@@ -46,16 +47,21 @@ class SQLiteStore:
                 );
                 """
             )
+            # Migration: add db_type column if missing (existing databases)
+            cols = [row[1] for row in conn.execute("PRAGMA table_info(database_connections)").fetchall()]
+            if "db_type" not in cols:
+                conn.execute("ALTER TABLE database_connections ADD COLUMN db_type TEXT NOT NULL DEFAULT 'postgresql'")
             conn.commit()
 
     def upsert_connection(self, connection: DatabaseConnection) -> None:
         with self.connect() as conn:
             conn.execute(
                 """
-                INSERT INTO database_connections (id, name, url, status, last_connected_at, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO database_connections (id, name, url, db_type, status, last_connected_at, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(name) DO UPDATE SET
                   url=excluded.url,
+                  db_type=excluded.db_type,
                   status=excluded.status,
                   last_connected_at=excluded.last_connected_at,
                   updated_at=excluded.updated_at
@@ -64,6 +70,7 @@ class SQLiteStore:
                     connection.id,
                     connection.name,
                     connection.url,
+                    connection.dbType.value,
                     connection.status.value,
                     connection.lastConnectedAt.isoformat() if connection.lastConnectedAt else None,
                     connection.createdAt.isoformat(),
@@ -113,10 +120,12 @@ class SQLiteStore:
     def _row_to_connection(self, row: sqlite3.Row) -> DatabaseConnection:
         from datetime import datetime
 
+        db_type_str = row["db_type"] if "db_type" in row.keys() else "postgresql"
         return DatabaseConnection(
             id=row["id"],
             name=row["name"],
             url=row["url"],
+            dbType=DatabaseType(db_type_str),
             status=ConnectionStatus(row["status"]),
             lastConnectedAt=datetime.fromisoformat(row["last_connected_at"]) if row["last_connected_at"] else None,
             createdAt=datetime.fromisoformat(row["created_at"]),

@@ -6,20 +6,25 @@ import sqlglot
 from urllib.parse import urlparse, urlunparse
 
 from src.llm.client import LLMClient
-from src.repositories.postgres_introspection import PostgresIntrospector
+from src.models.schemas import DatabaseType
+from src.repositories.connection_factory import ConnectionFactory
+from src.repositories.introspector_factory import IntrospectorFactory
 from src.repositories.sqlite_store import SQLiteStore
 from src.services.metadata_service import MetadataService
+from src.services.sql_dialect_factory import SQLDialectFactory
 from src.services.sql_service import SQLService
 
 router = APIRouter(prefix="/api/v1/dbs", tags=["dbs"])
 store = SQLiteStore()
 store.initialize()
-metadata_service = MetadataService(store, introspector=PostgresIntrospector())
+metadata_service = MetadataService(store)
 sql_service = SQLService()
 llm_client = LLMClient()
 
 
-def _get_default_password() -> str | None:
+def _get_default_password(db_type: DatabaseType = DatabaseType.postgresql) -> str | None:
+    if db_type == DatabaseType.mysql:
+        return os.getenv("DB_QUERY_MYSQL_PASSWORD") or os.getenv("MYSQL_PASSWORD") or ""
     return os.getenv("DB_QUERY_POSTGRES_PASSWORD") or os.getenv("POSTGRES_PASSWORD") or "postgres"
 
 
@@ -27,7 +32,7 @@ def _get_connection_dsn(name: str) -> str:
     connection = store.get_connection(name)
     if connection is None:
         raise HTTPException(status_code=404, detail="database connection not found")
-    dsn = _apply_password_to_dsn(connection.url, _get_default_password())
+    dsn = _apply_password_to_dsn(connection.url, _get_default_password(connection.dbType))
     return dsn
 
 
@@ -88,9 +93,9 @@ def _validate_generated_sql_against_schema(name: str, sql: str) -> None:
         )
 
 
-def _natural_query_payload(name: str, prompt: str) -> dict[str, object]:
+def _natural_query_payload(name: str, prompt: str, db_type: DatabaseType) -> dict[str, object]:
     context = _build_schema_context(name)
-    generated_sql = llm_client.generate_sql(prompt=prompt, context=context)
+    generated_sql = llm_client.generate_sql(prompt=prompt, context=context, db_type=db_type)
     try:
         _validate_generated_sql_against_schema(name, generated_sql)
     except HTTPException as exc:
@@ -102,7 +107,7 @@ def _natural_query_payload(name: str, prompt: str) -> dict[str, object]:
         }
 
     try:
-        result = sql_service.execute_sql(generated_sql, dsn=_get_connection_dsn(name))
+        result = sql_service.execute_sql(generated_sql, dsn=_get_connection_dsn(name), db_type=db_type)
         return {
             "generatedSql": generated_sql,
             "result": result.model_dump(by_alias=True),
@@ -130,6 +135,7 @@ def list_dbs() -> dict[str, list[dict[str, str]]]:
     items = [
         {
             "name": connection.name,
+            "dbType": connection.dbType.value,
             "status": connection.status.value,
             "lastConnectedAt": connection.lastConnectedAt.isoformat() if connection.lastConnectedAt else None,
         }
@@ -141,16 +147,21 @@ def list_dbs() -> dict[str, list[dict[str, str]]]:
 @router.post("/{name}")
 def add_db(name: str, payload: dict[str, str]) -> dict[str, str]:
     url = payload.get("url", "")
-    password = payload.get("password") or _get_default_password()
+    db_type_str = payload.get("dbType", "postgresql")
+    try:
+        db_type = DatabaseType(db_type_str)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Unsupported database type: {db_type_str}")
+    password = payload.get("password") or _get_default_password(db_type)
     if not url:
         raise HTTPException(status_code=400, detail="url is required")
     dsn = _apply_password_to_dsn(url, password)
     try:
-        connection = metadata_service.save_connection(name, dsn, password=password, active=True)
-        metadata_service.refresh_metadata(name, dsn, password=password)
+        connection = metadata_service.save_connection(name, dsn, password=password, active=True, db_type=db_type)
+        metadata_service.refresh_metadata(name, dsn, password=password, db_type=db_type)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return {"name": connection.name, "status": connection.status.value, "url": connection.url}
+    return {"name": connection.name, "status": connection.status.value, "url": connection.url, "dbType": connection.dbType.value}
 
 
 @router.get("/{name}")
@@ -168,8 +179,12 @@ def query_db(name: str, payload: dict[str, str]) -> dict[str, object]:
     sql = payload.get("sql", "")
     if not sql:
         raise HTTPException(status_code=400, detail="sql is required")
+    connection = store.get_connection(name)
+    if connection is None:
+        raise HTTPException(status_code=404, detail="database connection not found")
+    db_type = connection.dbType
     try:
-        result = sql_service.execute_sql(sql, dsn=_get_connection_dsn(name))
+        result = sql_service.execute_sql(sql, dsn=_get_connection_dsn(name), db_type=db_type)
     except (ValueError, sqlglot.errors.ParseError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -182,4 +197,8 @@ def query_natural(name: str, payload: dict[str, str]) -> dict[str, object]:
     prompt = payload.get("prompt", "")
     if not prompt:
         raise HTTPException(status_code=400, detail="prompt is required")
-    return _natural_query_payload(name, prompt)
+    connection = store.get_connection(name)
+    if connection is None:
+        raise HTTPException(status_code=404, detail="database connection not found")
+    db_type = connection.dbType
+    return _natural_query_payload(name, prompt, db_type)

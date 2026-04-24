@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from openai import OpenAI
 
+from src.models.schemas import DatabaseType
+
 
 @dataclass
 class LLMClient:
@@ -20,9 +22,10 @@ class LLMClient:
     def build_context(self, schema_summary: str) -> str:
         return schema_summary
 
-    def _system_prompt(self) -> str:
+    def _system_prompt(self, db_type: DatabaseType = DatabaseType.postgresql) -> str:
+        db_name = "PostgreSQL" if db_type == DatabaseType.postgresql else "MySQL"
         return (
-            "你是一个严格的 PostgreSQL SQL 生成助手。"
+            f"你是一个严格的 {db_name} SQL 生成助手。"
             "你只能使用用户给定的 Schema 上下文中明确存在的表名和列名。"
             "严禁臆造、猜测、推断不存在的字段名，例如 name、title、fullname 等。"
             "如果上下文中没有明确列名，不要编造；必须基于已知列名生成 SQL。"
@@ -36,13 +39,13 @@ class LLMClient:
         cleaned = re.sub(r"\s*```$", "", cleaned)
         return cleaned.strip()
 
-    def generate_sql(self, prompt: str, context: str) -> str:
+    def generate_sql(self, prompt: str, context: str, db_type: DatabaseType = DatabaseType.postgresql) -> str:
         response = self.client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", self.model),
             messages=[
                 {
                     "role": "system",
-                    "content": self._system_prompt(),
+                    "content": self._system_prompt(db_type),
                 },
                 {
                     "role": "user",

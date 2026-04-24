@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Card, Col, Empty, Form, Input, Layout, Row, Select, Space, Table, Typography, message } from 'antd'
 import Editor from '@monaco-editor/react'
-import { addDatabase, generateSql, getDatabase, listDatabases, runQuery, type DatabaseSummary, type NaturalQueryResponse, type QueryResult, type SchemaTable } from './services/api'
+import { addDatabase, generateSql, getDatabase, listDatabases, runQuery, type DatabaseSummary, type DatabaseType, type NaturalQueryResponse, type QueryResult, type SchemaTable } from './services/api'
+import { DatabaseTypeLabel } from './components/DatabaseTypeLabel'
 
 const { Header, Content } = Layout
 
@@ -16,7 +17,7 @@ export function App() {
   const [naturalResponse, setNaturalResponse] = useState<NaturalQueryResponse | null>(null)
   const [result, setResult] = useState<QueryResult | null>(null)
   const [loading, setLoading] = useState(false)
-  const [dbForm] = Form.useForm<{ name: string; url: string; password?: string }>()
+  const [dbForm] = Form.useForm<{ name: string; url: string; password?: string; dbType?: DatabaseType }>()
 
   useEffect(() => {
     void refreshDatabases()
@@ -56,7 +57,7 @@ export function App() {
     const values = await dbForm.validateFields()
     setLoading(true)
     try {
-      await addDatabase(values.name, values.url, values.password)
+      await addDatabase(values.name, values.url, values.password, values.dbType)
       message.success('数据库已添加')
       await refreshDatabases()
       setSelectedDb(values.name)
@@ -116,6 +117,8 @@ export function App() {
     }
   }
 
+  const selectedDbType = databases.find((db) => db.name === selectedDb)?.dbType ?? 'postgresql'
+
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fb' }}>
       <Header style={{ background: '#fff', borderBottom: '1px solid #e8e8e8' }}>
@@ -126,9 +129,12 @@ export function App() {
       <Content style={{ padding: 24 }}>
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           <Card title="数据库连接管理">
-            <Form form={dbForm} layout="inline">
+            <Form form={dbForm} layout="inline" initialValues={{ dbType: 'postgresql' }}>
               <Form.Item name="name" label="连接名" rules={[{ required: true, message: '请输入连接名' }]}>
                 <Input placeholder="demo" />
+              </Form.Item>
+              <Form.Item name="dbType" label="数据库类型">
+                <Select style={{ width: 140 }} options={[{ label: 'PostgreSQL', value: 'postgresql' }, { label: 'MySQL', value: 'mysql' }]} />
               </Form.Item>
               <Form.Item name="url" label="数据库 URL" rules={[{ required: true, message: '请输入数据库 URL' }]}>
                 <Input placeholder="postgres://postgres@localhost:5432/postgres" style={{ width: 320 }} />
@@ -154,7 +160,7 @@ export function App() {
 
           <Row gutter={16}>
             <Col span={10}>
-              <Card title="Schema（模式）浏览">
+              <Card title="Schema（模式）浏览" extra={selectedDb ? <DatabaseTypeLabel dbType={selectedDbType} /> : null}>
                 {tables.length > 0 ? (
                   <Table
                     rowKey={(record) => record.id}

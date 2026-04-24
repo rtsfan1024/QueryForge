@@ -10,6 +10,7 @@ dependencies = [
   "sqlglot>=25.0.0",
   "openai>=1.25.0",
   "psycopg[binary]>=3.2.0",
+  "pymysql>=1.1.0",
 ]
 
 [tool.pytest.ini_options]

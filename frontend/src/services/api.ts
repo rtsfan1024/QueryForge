@@ -1,5 +1,8 @@
+export type DatabaseType = 'postgresql' | 'mysql'
+
 export type DatabaseSummary = {
   name: string
+  dbType: DatabaseType
   status: string
   lastConnectedAt: string | null
 }
@@ -54,7 +57,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       if (json.detail && typeof json.detail === 'object') {
         throw new Error(json.detail.message ?? json.detail.msg ?? text)
       }
-    } catch {
+      throw new Error(text)
+    } catch (e) {
+      if (e instanceof Error && e.message !== text) throw e
       throw new Error(text)
     }
   }
@@ -65,10 +70,10 @@ export function listDatabases(): Promise<{ items: DatabaseSummary[] }> {
   return request('/api/v1/dbs')
 }
 
-export function addDatabase(name: string, url: string, password?: string): Promise<DatabaseSummary> {
+export function addDatabase(name: string, url: string, password?: string, dbType?: DatabaseType): Promise<DatabaseSummary> {
   return request(`/api/v1/dbs/${encodeURIComponent(name)}`, {
     method: 'POST',
-    body: JSON.stringify({ url, password }),
+    body: JSON.stringify({ url, password, dbType: dbType || 'postgresql' }),
   })
 }
 

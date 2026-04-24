@@ -1,5 +1,8 @@
+export type DatabaseType = 'postgresql' | 'mysql'
+
 export type DatabaseSummary = {
   name: string
+  dbType: DatabaseType
   status: string
   lastConnectedAt: string | null
 }
